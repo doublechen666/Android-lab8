@@ -59,7 +59,7 @@
         />
     <ListView
         android:id="@+id/list"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="0px"
         app:layout_constraintTop_toBottomOf="@id/divide_line"
         app:layout_constraintBottom_toBottomOf="parent"/>
