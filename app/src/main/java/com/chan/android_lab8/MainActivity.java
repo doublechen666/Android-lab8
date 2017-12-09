@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.provider.ContactsContract;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
                 gift_dialog = view_in.findViewById(R.id.d_edit3);
                 phone_dialog = view_in.findViewById(R.id.phoneNoText);
                 name_dialog.setText(curr_name);
+                phone_dialog.setText(getPhoneNo(curr_name));
                 changeitem_alertdialog.setPositiveButton("保存修改", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -137,17 +139,27 @@ public class MainActivity extends AppCompatActivity {
         ContactsAdapter.notifyDataSetChanged();
     }
 
-    //    void fillContactsList(ArrayList<Contact> List){
-//
-//        if(cursor.moveToFirst()){
-//            do{
-//                Map<String, Object> temp = new LinkedHashMap<>();
-//                temp.put("id", cursor.getInt(cursor.getColumnIndex("id")));
-//                temp.put("name", cursor.getString(cursor.getColumnIndex("name")));
-//                temp.put("birth", cursor.getString(cursor.getColumnIndex("birth")));
-//                temp.put("gift", cursor.getString(cursor.getColumnIndex("gift")));
-//                ContactsList.add(temp);
-//            }while (cursor.moveToNext());
-//        }
-//    }
+    private String getPhoneNo(String name){
+        String number = "";
+        int isHas = 0;
+        // reference: http://blog.csdn.net/zach_zhou/article/details/51595226
+        Cursor cursor = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI,null, ContactsContract.PhoneLookup.DISPLAY_NAME+"=?",new String[]{name},null);
+        //has_phone_number:http://uule.iteye.com/blog/1709227
+        //has_phone_number是否是1决定data表中有无电话记录
+        if(cursor.moveToFirst()){
+            isHas = Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
+        }
+        if(isHas == 1){
+            int ContactID = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+            Cursor phone = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + ContactID,
+                    null, null);
+            while(phone.moveToNext()) {
+                number += phone.getString(phone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)) + " ";
+            }
+        }else{
+            number = "无";
+        }
+        return number;
+    }
 }
